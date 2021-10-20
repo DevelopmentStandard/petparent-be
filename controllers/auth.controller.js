@@ -14,19 +14,21 @@ exports.loginUser = async (req, res) => {
 
     if (error.password === null) {
       const access_token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "30 days",
+        expiresIn: "10 days",
       });
 
       const response = {
         user,
         access_token,
       };
-      return res.status(200).json(response);
+      return res.status(200).json({ ...response, status: true });
     }
     return res.status(400).json({ error });
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ errors: [{ msg: "Server error" }] });
+    res
+      .status(500)
+      .json({ message: "Oops! Something went wrong!", status: false });
   }
 };
 
@@ -58,12 +60,12 @@ exports.registerNewUser = async (req, res) => {
 
       user.save((err, data) => {
         if (err) {
-          res.status(400).json({ errors: [{ msg: err }] });
+          res.status(400).json({ message: err, status: false });
         }
       });
 
       const access_token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "30 days",
+        expiresIn: "10 days",
       });
 
       const response = {
@@ -71,11 +73,10 @@ exports.registerNewUser = async (req, res) => {
         access_token,
       };
 
-      return res.status(200).json(response);
+      return res.status(200).json({ ...response, status: true });
     }
-    return res.status(400).json({ error });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ errors: [{ msg: "Server error" }] });
+  } catch (err) {
+    console.error(err.message);
+    return res.status(400).json({ error, status: false });
   }
 };
