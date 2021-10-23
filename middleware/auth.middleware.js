@@ -8,21 +8,25 @@ exports.authMiddleware = (req, res, next) => {
   if (!token) {
     return res
       .status(401)
-      .json({ errors: [{ msg: "No token, Authorization Denied" }] });
+      .json({ message: "No token, Authorization Denied", status: false });
   }
 
   try {
     jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
       if (error) {
-        return res.status(401).json({ msg: "Token is Not Valid" });
+        return res
+          .status(401)
+          .json({ message: "Token is Not Valid", status: false });
       } else {
         User.findById(decoded._id, (err, data) => {
           if (err) {
-            res.status(400).json({ errors: [{ msg: err }] });
+            res.status(400).json({ message: err, status: false });
           } else if (!data) {
-            res.status(401).json({ errors: [{ msg: "Token is Not Valid" }] });
+            res
+              .status(401)
+              .json({ message: "Token is Not Valid", status: false });
           } else {
-            req.user = data;
+            req.user = { ...data, status: true };
             next();
           }
         });
@@ -30,6 +34,6 @@ exports.authMiddleware = (req, res, next) => {
     });
   } catch (err) {
     console.error(`Something went Wrong with auth Middleware : ${err}`);
-    res.status(500).json({ msg: "Server Error" });
+    res.status(500).json({ message: "Server Error", status: false });
   }
 };
